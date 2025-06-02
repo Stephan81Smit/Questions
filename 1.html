@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Freestock Calculators</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f9fa; margin: 0; padding: 0; }
+        .container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 32px; }
+        h1 { text-align: center; color: #2d3e50; margin-bottom: 10px; }
+        .instructions { text-align: center; color: #444; margin-bottom: 28px; }
+        h2 { color: #1b5fc6; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        .segment { margin-bottom: 32px; }
+        label { display: block; margin: 12px 0 6px; font-weight: 600; }
+        input[type="number"], select { width: 100%; padding: 8px; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; }
+        .row { display: flex; gap: 16px; }
+        .col { flex: 1; }
+        .results { background: #f1f3f6; border-radius: 8px; margin-top: 18px; padding: 18px; }
+        .result-item { margin: 8px 0; }
+        .result-label { font-weight: 500; }
+        button {
+            display: block;
+            background: #2d7ff9; color: #fff; border: none; padding: 16px 0;
+            border-radius: 5px; font-size: 1.2em; cursor: pointer; width: 100%;
+            margin: 32px 0 0 0; font-weight: bold; letter-spacing: 1px;
+            box-shadow: 0 2px 6px rgba(44,127,249,0.07);
+            transition: background 0.2s;
+        }
+        button:hover { background: #1b5fc6; }
+        @media (max-width: 600px) {
+            .row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Freestock Calculators</h1>
+        <div class="instructions">
+            What would you like to calculate?<br>
+            Select an option below to get started.
+        </div>
+        <form id="mainForm" autocomplete="off">
+            <div class="segment">
+                <label for="calcType">Choose calculation:</label>
+                <select id="calcType" required>
+                    <option value="">-- Select --</option>
+                    <option value="weight">Weight (kg/m, total kg, total meters)</option>
+                    <option value="cost">Cost (per meter, per ton, each)</option>
+                    <option value="selling">Selling Price (per meter, per ton, each)</option>
+                </select>
+            </div>
+
+            <!-- Weight Fields -->
+            <div class="segment" id="weightFields" style="display:none;">
+                <h2>Weight Calculation</h2>
+                <div class="row">
+                    <div class="col">
+                        <label for="width">Width (mm)</label>
+                        <input type="number" id="width" value="925" min="1" step="0.01">
+                    </div>
+                    <div class="col">
+                        <label for="thickness">Thickness (mm)</label>
+                        <input type="number" id="thickness" value="0.5" min="0.01" step="0.01">
+                    </div>
+                    <div class="col">
+                        <label for="length">Length (mm)</label>
+                        <input type="number" id="length" value="1000" min="1" step="0.01">
+                    </div>
+                    <div class="col">
+                        <label for="density">Density (g/cm³)</label>
+                        <select id="density">
+                            <option value="8.039" selected>8.039</option>
+                            <option value="7.85">7.85</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Fields -->
+            <div class="segment" id="costFields" style="display:none;">
+                <h2>Cost Calculation</h2>
+                <div class="row">
+                    <div class="col">
+                        <label for="pricePerKg">Price per kg (R/kg)</label>
+                        <input type="number" id="pricePerKg" value="20" min="0.01" step="0.01">
+                    </div>
+                    <div class="col">
+                        <label for="weightEach">Weight each (kg)</label>
+                        <input type="number" id="weightEach" value="4.662" min="0.01" step="0.001">
+                    </div>
+                    <div class="col" id="costKgPerMCol" style="display:none;">
+                        <label for="costKgPerM">kg/m (from Weight calc)</label>
+                        <input type="number" id="costKgPerM" value="" min="0.01" step="0.0001">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selling Fields -->
+            <div class="segment" id="sellingFields" style="display:none;">
+                <h2>Selling Price Calculation</h2>
+                <div class="row">
+                    <div class="col">
+                        <label for="desiredGP">Desired Gross Profit (%)</label>
+                        <input type="number" id="desiredGP" value="20" min="0" max="100" step="0.01">
+                    </div>
+                    <div class="col" id="sellingCostPerMCol" style="display:none;">
+                        <label for="sellingCostPerM">Cost per meter (from Cost calc)</label>
+                        <input type="number" id="sellingCostPerM" value="" min="0.01" step="0.0001">
+                    </div>
+                    <div class="col" id="sellingCostPerTonCol" style="display:none;">
+                        <label for="sellingCostPerTon">Cost per ton (from Cost calc)</label>
+                        <input type="number" id="sellingCostPerTon" value="" min="0.01" step="0.0001">
+                    </div>
+                    <div class="col" id="sellingPriceEachCol" style="display:none;">
+                        <label for="sellingPriceEach">Price each (from Cost calc)</label>
+                        <input type="number" id="sellingPriceEach" value="" min="0.01" step="0.0001">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="calcBtn" style="display:none;">Calculate</button>
+        </form>
+
+        <!-- Results -->
+        <div class="results" id="results" style="display:none;"></div>
+    </div>
+
+    <script>
+        // Helper function to round to 4 decimals
+        function r4(val) { return Math.round(val * 10000) / 10000; }
+
+        // Show/hide fields based on selection
+        document.getElementById('calcType').addEventListener('change', function() {
+            const type = this.value;
+            document.getElementById('weightFields').style.display = 'none';
+            document.getElementById('costFields').style.display = 'none';
+            document.getElementById('sellingFields').style.display = 'none';
+            document.getElementById('calcBtn').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+
+            if (type === "weight") {
+                document.getElementById('weightFields').style.display = 'block';
+                document.getElementById('calcBtn').style.display = 'block';
+            } else if (type === "cost") {
+                document.getElementById('costFields').style.display = 'block';
+                document.getElementById('costKgPerMCol').style.display = 'block';
+                document.getElementById('calcBtn').style.display = 'block';
+            } else if (type === "selling") {
+                document.getElementById('sellingFields').style.display = 'block';
+                document.getElementById('sellingCostPerMCol').style.display = 'block';
+                document.getElementById('sellingCostPerTonCol').style.display = 'block';
+                document.getElementById('sellingPriceEachCol').style.display = 'block';
+                document.getElementById('calcBtn').style.display = 'block';
+            }
+        });
+
+        document.getElementById('mainForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const type = document.getElementById('calcType').value;
+            let resultHTML = "";
+
+            if (type === "weight") {
+                // Weight calculations
+                const width = parseFloat(document.getElementById('width').value);
+                const thickness = parseFloat(document.getElementById('thickness').value);
+                const length = parseFloat(document.getElementById('length').value);
+                const density = parseFloat(document.getElementById('density').value);
+
+                const kgPerM = r4((width * thickness * density) / 1000);
+                const totalMeters = r4(length / 1000);
+                const totalKg = r4(totalMeters * kgPerM);
+
+                resultHTML += `<div class="result-item"><span class="result-label">kg/m:</span> ${kgPerM} kg</div>`;
+                resultHTML += `<div class="result-item"><span class="result-label">Total meters:</span> ${totalMeters} m</div>`;
+                resultHTML += `<div class="result-item"><span class="result-label">Total kg:</span> ${totalKg} kg</div>`;
+
+                // Suggest value for cost calculation
+                document.getElementById('costKgPerM').value = kgPerM;
+
+            } else if (type === "cost") {
+                // Cost calculations
+                const pricePerKg = parseFloat(document.getElementById('pricePerKg').value);
+                const weightEach = parseFloat(document.getElementById('weightEach').value);
+                const kgPerM = parseFloat(document.getElementById('costKgPerM').value);
+
+                const costPerM = r4(kgPerM * pricePerKg);
+                const costPerTon = r4(pricePerKg * 1000);
+                const priceEach = r4(weightEach * pricePerKg);
+
+                resultHTML += `<div class="result-item"><span class="result-label">Cost per meter (R):</span> R ${costPerM}</div>`;
+                resultHTML += `<div class="result-item"><span class="result-label">Cost per ton (R):</span> R ${costPerTon}</div>`;
+                resultHTML += `<div class="result-item"><span class="result-label">Price each (R):</span> R ${priceEach}</div>`;
+
+                // Suggest value for selling calculation
+                document.getElementById('sellingCostPerM').value = costPerM;
+                document.getElementById('sellingCostPerTon').value = costPerTon;
+                document.getElementById('sellingPriceEach').value = priceEach;
+
+            } else if (type === "selling") {
+                // Selling calculations
+                const desiredGP = parseFloat(document.getElementById('desiredGP').value) / 100;
+                const costPerM = parseFloat(document.getElementById('sellingCostPerM').value);
+                const costPerTon = parseFloat(document.getElementById('sellingCostPerTon').value);
+                const priceEach = parseFloat(document.getElementById('sellingPriceEach').value);
+
+                const sellingPerM = r4(costPerM / (1 - desiredGP));
+                const sellingPerTon = r4(costPerTon / (1 - desiredGP));
+                const sellingEach = r4(priceEach / (1 - desiredGP));
+
+                resultHTML += `<div class="result-item"><span class="result-label">Selling price per meter (R):</span> R ${sellingPerM}</div>`;
+                resultHTML += `<div class="result-item"><span class="result-label">Selling price per ton (R):</span> R ${sellingPerTon}</div>`;
+                resultHTML += `<div class="result-item"><span class="result-label">Selling price each (R):</span> R ${sellingEach}</div>`;
+            }
+
+            document.getElementById('results').innerHTML = resultHTML;
+            document.getElementById('results').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
